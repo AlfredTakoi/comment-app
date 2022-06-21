@@ -1,23 +1,8 @@
 <template>
+  <navbar-vue></navbar-vue>
+
   <div class="container mt-5">
     <h1>Post Comments</h1>
-    <div
-      class="toast show align-items-center bg-success text-light border-0 position-fixed top-0 end-0 mt-5"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
-      v-if="toast"
-    >
-      <div class="d-flex">
-        <div class="toast-body">Success Create Comment</div>
-        <button
-          type="button"
-          class="btn-close btn-close-white me-2 m-auto"
-          data-bs-dismiss="toast"
-          aria-label="Close"
-        ></button>
-      </div>
-    </div>
 
     <hr />
     <button
@@ -33,8 +18,9 @@
       <thead>
         <tr>
           <th scope="col">No</th>
-          <th scope="col">Commenter</th>
-          <th scope="col">Body</th>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Comment</th>
           <th scope="col">Action</th>
         </tr>
       </thead>
@@ -42,11 +28,12 @@
         <tr v-for="(item, index) in itemsComments" :key="(index += 1)">
           <td>{{ index }}</td>
           <td>{{ item.commenter }}</td>
+          <td>{{ item.email }}</td>
           <td>{{ item.body }}</td>
           <td>
             <button
               type="button"
-              class="btn btn-outline-warning btn-sm"
+              class="btn btn-outline-warning btn-sm m-1"
               data-bs-toggle="modal"
               data-bs-target="#updateModal"
               data-bs-whatever="@fat"
@@ -77,26 +64,32 @@
                   <div class="modal-body">
                     <form>
                       <div class="mb-3">
-                        <label for="recipient-name" class="col-form-label"
-                          >Commenter:</label
-                        >
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="recipient-name"
-                          v-model="findOneComment.commenter"
-                        />
-                      </div>
-                      <div class="mb-3">
-                        <label for="message-text" class="col-form-label"
-                          >Body:</label
-                        >
-                        <textarea
-                          class="form-control"
-                          id="message-text"
-                          v-model="findOneComment.body"
-                        ></textarea>
-                      </div>
+                <label for="recipient-name" class="col-form-label"
+                  >Name:</label
+                >
+                <input type="text" class="form-control" id="recipient-name" v-bind:class="{ 'is-invalid': nameError }" v-model="findOneComment.commenter" placeholder="Your Name"/>
+                <div class="invalid-feedback" id="feedback-1" v-if="errors[0]">
+									{{ errors[0].message }}
+								</div>
+              </div>
+              <div class="mb-3">
+                <label for="recipient-name" class="col-form-label"
+                  >Email:</label
+                >
+                <input type="text" class="form-control" v-bind:class="{ 'is-invalid': emailError }" id="email" placeholder="Your email" v-model="findOneComment.email">
+								<div class="invalid-feedback" id="feedback-2" v-if="errors[1]">
+									{{ errors[1].message }}
+								</div>
+              </div>
+              <div class="mb-3">
+                <label for="message-text" class="col-form-label"
+                  >Comment:</label
+                >
+                <textarea class="form-control" v-bind:class="{ 'is-invalid': commentError }" id="comment" placeholder="Your comment" v-model="findOneComment.body"></textarea>
+								<div class="invalid-feedback" id="feedback-3" v-if="errors[2]">
+									{{ errors[2].message }}
+								</div>
+              </div>
                     </form>
                   </div>
                   <div class="modal-footer">
@@ -169,22 +162,30 @@
             <form>
               <div class="mb-3">
                 <label for="recipient-name" class="col-form-label"
-                  >Commenter:</label
+                  >Name:</label
                 >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="recipient-name"
-                  v-model="commenter"
-                />
+                <input type="text" class="form-control" id="recipient-name" v-bind:class="{ 'is-invalid': nameError }" v-model="name" placeholder="Your Name"/>
+                <div class="invalid-feedback" id="feedback-1" v-if="errors[0]">
+									{{ errors[0].message }}
+								</div>
               </div>
               <div class="mb-3">
-                <label for="message-text" class="col-form-label">Body:</label>
-                <textarea
-                  class="form-control"
-                  id="message-text"
-                  v-model="body"
-                ></textarea>
+                <label for="recipient-name" class="col-form-label"
+                  >Email:</label
+                >
+                <input type="text" class="form-control" v-bind:class="{ 'is-invalid': emailError }" id="email" placeholder="Your email" v-model="email">
+								<div class="invalid-feedback" id="feedback-2" v-if="errors[1]">
+									{{ errors[1].message }}
+								</div>
+              </div>
+              <div class="mb-3">
+                <label for="message-text" class="col-form-label"
+                  >Comment:</label
+                >
+                <textarea class="form-control" v-bind:class="{ 'is-invalid': commentError }" id="comment" placeholder="Your comment" v-model="comment"></textarea>
+								<div class="invalid-feedback" id="feedback-3" v-if="errors[2]">
+									{{ errors[2].message }}
+								</div>
               </div>
             </form>
           </div>
@@ -212,7 +213,7 @@
             <button
               type="button"
               class="btn btn-primary"
-              @click="createComment"
+              @click.prevent="createComment"
               v-else
             >
               Create
@@ -277,26 +278,47 @@
         </div>
       </div>
     </div>
+
+    <toast-success-vue v-if="toastSuccess"></toast-success-vue>
+    <toast-success-update-vue v-if="toastSuccessUpdate"></toast-success-update-vue>
+    <toast-success-delete-vue v-if="toastSuccessDelete"></toast-success-delete-vue>
   </div>
 </template>
 <script>
-import axios from "axios";
-import $ from 'jquery'
+import axios from "@/axios";
+import $ from "jquery";
+import NavbarVue from "./Navbar.vue";
+import ToastSuccessVue from "./Toast/ToastSuccess.vue";
+import ToastSuccessUpdateVue from "./Toast/ToastSuccessUpdate.vue";
+import ToastSuccessDeleteVue from './Toast/ToastSuccessDelete.vue';
 
 export default {
-  components: {},
+  components: {
+    NavbarVue,
+    ToastSuccessVue,
+    ToastSuccessUpdateVue,
+    ToastSuccessDeleteVue
+  },
   data() {
     return {
       itemsComments: [],
       findOneComment: [],
-      body: "",
-      commenter: "",
-      no: 0,
       deleteId: null,
       updateId: null,
       modalShow: true,
       loading: false,
-      toast: false
+      toastSuccess: false,
+      toastSuccessUpdate: false,
+      toastSuccessDelete: false,
+      commenterError: false,
+      bodyError: false,
+      name: "",
+      email: "",
+      comment: "",
+      nameError: false,
+      emailError: false,
+      commentError: false,
+      errors: [],
     };
   },
 
@@ -304,28 +326,61 @@ export default {
     this.getComments();
   },
   methods: {
+    validate() {
+      this.errors = [];
+      var len = this.name.length;
+      if (len == 0) {
+        this.nameError = true;
+        this.errors.push({
+          message: "Commenter Cannot be Empty",
+        });
+      }
+      if(this.email.length < 10 || this.email.search('@') == -1) {
+        this.emailError = true;
+        this.errors.push({
+          'message': 'Please provide a valid email address.'
+        });
+      }
+      // comment validate
+      if (this.comment.length == 0) {
+        this.commentError = true;
+        this.errors.push({
+          field: "comment",
+          message: "Body Cannot be Empty",
+        });
+      }
+    },
+
     createComment() {
       this.loading = true;
       axios
-        .post("https://62aece663bbf46a352168744.mockapi.io/posts", {
-          commenter: this.commenter,
-          body: this.body,
-        })
+        .post(
+          "comments",
+          {
+            commenter: this.name,
+            email: this.email,
+            body: this.comment,
+          }
+        )
         .then((res) => {
           console.log(res);
-          this.loading = false;
+          this.loading = false
           $("[data-bs-dismiss=modal]").trigger({ type: "click" });
-          setTimeout(this.toast = true, 5000)
-
+          this.toastSuccess = true;
+          this.commenter = null;
+          this.body = null;
+          setTimeout(() => (this.toastSuccess = false), 3000);
           this.getComments();
         })
         .catch((err) => {
+          this.loading = false
           console.log(err);
         });
     },
+
     getComments() {
       axios
-        .get("https://62aece663bbf46a352168744.mockapi.io/posts")
+        .get("comments")
         .then((res) => {
           console.log(res.data);
           this.itemsComments = res.data;
@@ -342,7 +397,7 @@ export default {
 
     getCommentsId(id) {
       axios
-        .get("https://62aece663bbf46a352168744.mockapi.io/posts/" + id)
+        .get("/comments/" + id)
         .then((res) => {
           console.log(res);
           this.findOneComment = res.data;
@@ -354,19 +409,22 @@ export default {
     },
 
     updateComments() {
-      this.loading = true
+      this.loading = true;
       axios
         .put(
-          "https://62aece663bbf46a352168744.mockapi.io/posts/" + this.updateId,
+          "/comments/" + this.updateId,
           {
             commenter: this.findOneComment.commenter,
+            email: this.findOneComment.email,
             body: this.findOneComment.body,
           }
         )
         .then((res) => {
           console.log(res);
-          this.loading = false
+          this.loading = false;
           $("[data-bs-dismiss=modal]").trigger({ type: "click" });
+          this.toastSuccessUpdate = true;
+          setTimeout(() => (this.toastSuccessUpdate = false), 3000);
           this.getComments();
         })
         .catch((err) => {
@@ -375,14 +433,14 @@ export default {
     },
 
     deleteComments() {
-      this.loading = true
+      this.loading = true;
       axios
-        .delete(
-          "https://62aece663bbf46a352168744.mockapi.io/posts/" + this.deleteId
-        )
+        .delete("/comments/" + this.deleteId)
         .then((res) => {
           console.log(res);
-          this.loading = false
+          this.loading = false;
+          this.toastSuccessDelete = true;
+          setTimeout(() => (this.toastSuccessDelete = false), 3000);
           $("[data-bs-dismiss=modal]").trigger({ type: "click" });
           this.getComments();
           this.delete = null;
