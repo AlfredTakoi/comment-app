@@ -353,8 +353,6 @@ export default {
 
     createComment() {
       this.loading = true;
-      if(this.validate()==true){
-
         axios
           .post(
             "comments",
@@ -378,9 +376,7 @@ export default {
             this.loading = false
             console.log(err);
           });
-      } else{
-        this.loading = false
-      }
+    
     },
 
     getComments() {
