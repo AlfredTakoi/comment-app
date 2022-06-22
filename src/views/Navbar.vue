@@ -29,7 +29,7 @@
 
             <li class="nav-item">
               <router-link
-                :to="{ name: 'account', params: { id: '1' } }"
+                to="/account"
                 active-link="active"
                 class="nav-link"
                 >Account</router-link

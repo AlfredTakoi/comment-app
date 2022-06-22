@@ -5,6 +5,9 @@
         <div class="card border-0 shadow rounded-3 my-5">
           <div class="card-body p-4 p-sm-5">
             <h5 class="card-title text-center mb-5 fw-light fs-5">Sign Up</h5>
+            <div class="alert alert-danger" role="alert" v-if="validate">
+              Please Check Your Form 
+            </div>
             <form @submit.prevent="loginForm">
               <div class="form-floating mb-3">
                 <input
@@ -95,6 +98,7 @@ export default {
       password: "",
       passwordConfirmation: "",
       loading: false,
+      validate: false
     };
   },
 
@@ -114,6 +118,7 @@ export default {
           this.$router.push({ path: "/" });
         })
         .catch((error) => {
+          this.validate = true
           this.loading = false;
           console.log(error);
         });

@@ -353,29 +353,34 @@ export default {
 
     createComment() {
       this.loading = true;
-      axios
-        .post(
-          "comments",
-          {
-            commenter: this.name,
-            email: this.email,
-            body: this.comment,
-          }
-        )
-        .then((res) => {
-          console.log(res);
-          this.loading = false
-          $("[data-bs-dismiss=modal]").trigger({ type: "click" });
-          this.toastSuccess = true;
-          this.commenter = null;
-          this.body = null;
-          setTimeout(() => (this.toastSuccess = false), 3000);
-          this.getComments();
-        })
-        .catch((err) => {
-          this.loading = false
-          console.log(err);
-        });
+      if(this.validate()==true){
+
+        axios
+          .post(
+            "comments",
+            {
+              commenter: this.name,
+              email: this.email,
+              body: this.comment,
+            }
+          )
+          .then((res) => {
+            console.log(res);
+            this.loading = false
+            $("[data-bs-dismiss=modal]").trigger({ type: "click" });
+            this.toastSuccess = true;
+            this.commenter = null;
+            this.body = null;
+            setTimeout(() => (this.toastSuccess = false), 3000);
+            this.getComments();
+          })
+          .catch((err) => {
+            this.loading = false
+            console.log(err);
+          });
+      } else{
+        this.loading = false
+      }
     },
 
     getComments() {

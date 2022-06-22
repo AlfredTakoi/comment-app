@@ -33,7 +33,7 @@ const routes = [
     }
   },
   {
-    path: '/account/:id',
+    path: '/account/',
     name: 'account',
     component: () => import('../views/Account.vue'),
     meta:{
