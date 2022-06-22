@@ -23,7 +23,7 @@
             </li>
             <li class="nav-item">
               <router-link to="/post" active-link="active" class="nav-link"
-                >Post</router-link
+                >Commnents</router-link
               >
             </li>
 
